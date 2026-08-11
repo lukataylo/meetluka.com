@@ -122,20 +122,30 @@ ul{padding:0;list-style:none}
    ============================================================ */
 .shell{position:relative;background:#fff}
 .shell-sticky{position:sticky;top:0;height:100svh}
+/* The card is a CLIP, never a resize. Every layer in here — the page
+   gradient, the ribbon, the polygon field — is sized as a percentage of this
+   box, so changing its width and height re-rendered all three on every frame
+   of the morph and dropped it to 15fps. Clipping leaves their raster
+   untouched and only moves the edge. */
 .canvas{
-  position:absolute;inset:0;overflow:hidden;isolation:isolate;
+  position:absolute;inset:0;overflow:hidden;isolation:isolate;z-index:1;
   background:radial-gradient(120% 80% at 50% 8%,#f2f2f4 0%,var(--canvas) 55%,#dedee2 100%);
+  will-change:clip-path;
 }
 .canvas-fx{position:absolute;inset:0;z-index:0}
 /* sized against the canvas, not the viewport, so the beam contracts with the
    card instead of overflowing it once the morph has run */
-.canvas .ribbon{top:56%;width:136%;height:78%}
+.canvas .ribbon{top:56%;width:130%;height:56%}
 .canvas-fx .ribbon{opacity:.85}
 
+/* deliberately a sibling of .canvas, not a child: it is a full-viewport text
+   subtree, and while it lived inside the clipped element every frame of the
+   morph dragged it through paint too. It has faded out well before the card
+   is small enough for the missing clip to show. */
 .hero-layer{
   position:absolute;left:50%;top:0;width:100vw;height:100svh;
   transform:translateX(-50%);transform-origin:50% 40%;
-  z-index:2;display:flex;justify-content:center;
+  z-index:5;display:flex;justify-content:center;
   will-change:transform,opacity;
 }
 
@@ -424,121 +434,123 @@ h1{
      ================================================================ -->
 <section class="shell" id="top" data-shell>
   <div class="shell-sticky">
+
+    <!-- The hero is a sibling of the canvas, not a child. It is a full-viewport
+         text subtree, and inside the clipped element every frame of the morph
+         dragged it through paint. DOM order keeps the h1 leading the document;
+         z-index, not source order, decides what paints on top. -->
+    <div class="hero-layer" data-hero-layer>
+    <aside class="notes tl" aria-hidden="true">
+    <span class="note-line">// luka dadiani · london</span>
+    <span class="note-line">aviation · fine art · cargo</span>
+    <span class="note-line">telematics · redemption</span>
+    <span class="note-line">regulated · legacy · edge cases</span>
+    <span class="note-line">// the products nobody wants</span>
+    </aside>
+    <aside class="notes bl" aria-hidden="true">
+    <span class="note-line">// method</span>
+    <span class="note-line">talk to users &gt; find the constraint</span>
+    <span class="note-line">constraint &gt; prototype it</span>
+    <span class="note-line">prototype &gt; ship it &gt; measure</span>
+    <span class="note-line">// then do it again</span>
+    </aside>
+
+    <div class="stage">
+    <svg class="emblem" data-hero="emblem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true">
+    <path d="M8.6 2.2H15.4L21.8 8.6V15.4L15.4 21.8H8.6L2.2 15.4V8.6Z"/>
+    </svg>
+
+    <p class="who" data-hero="who">Luka Dadiani</p>
+
+    <!-- pre-split so the headline can animate from CSS alone. It is the
+    LCP element; making it wait for 46KB of JS delayed the largest
+    paint by the whole download. -->
+    <h1><span class="w" style="--i:0">Complicated</span> <span class="w" style="--i:1">products,</span><br><span class="w" style="--i:2">made</span> <span class="w" style="--i:3">obvious</span></h1>
+
+    <div class="ctas" data-hero="ctas">
+    <a class="btn dark" href="mailto:luka.dadiani@me.com">
+    <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="2.25" y="3.25" width="13.5" height="11.5" rx="2"/><path d="m2.75 5.5 6.25 4 6.25-4"/>
+    </svg>Get in touch
+    </a>
+    <a class="btn light" href="https://www.linkedin.com/in/lukadadiani/" target="_blank" rel="noopener">
+    <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M2.95 5A7.25 7.25 0 1 1 2.95 13"/><polyline points="8 12.25 11.25 9 8 5.75"/><line x1="11.25" y1="9" x2="1.75" y2="9"/>
+    </svg>LinkedIn
+    </a>
+    </div>
+
+    <a class="mailto" data-hero="mailto" href="#work">See selected work <b>&rsaquo;</b></a>
+
+    <div data-hero="lede">
+    <p class="lede">Product manager and senior designer. London.</p>
+    <p class="lede">Ten years making regulated, legacy-bound software feel obvious.</p>
+    </div>
+
+    <a class="more" data-hero="more" href="#letter"><span>learn more</span><span class="dots"></span></a>
+    </div>
+    </div>
+
     <div class="canvas" data-canvas>
-
-      <!-- ------------------------- hero layer ------------------------- -->
-      <div class="hero-layer" data-hero-layer>
-        <aside class="notes tl" aria-hidden="true">
-          <span class="note-line">// luka dadiani · london</span>
-          <span class="note-line">aviation · fine art · cargo</span>
-          <span class="note-line">telematics · redemption</span>
-          <span class="note-line">regulated · legacy · edge cases</span>
-          <span class="note-line">// the products nobody wants</span>
-        </aside>
-        <aside class="notes bl" aria-hidden="true">
-          <span class="note-line">// method</span>
-          <span class="note-line">talk to users &gt; find the constraint</span>
-          <span class="note-line">constraint &gt; prototype it</span>
-          <span class="note-line">prototype &gt; ship it &gt; measure</span>
-          <span class="note-line">// then do it again</span>
-        </aside>
-
-        <div class="stage">
-          <svg class="emblem" data-hero="emblem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true">
-            <path d="M8.6 2.2H15.4L21.8 8.6V15.4L15.4 21.8H8.6L2.2 15.4V8.6Z"/>
-          </svg>
-
-          <p class="who" data-hero="who">Luka Dadiani</p>
-
-          <!-- pre-split so the headline can animate from CSS alone. It is the
-               LCP element; making it wait for 46KB of JS delayed the largest
-               paint by the whole download. -->
-          <h1><span class="w" style="--i:0">Complicated</span> <span class="w" style="--i:1">products,</span><br><span class="w" style="--i:2">made</span> <span class="w" style="--i:3">obvious</span></h1>
-
-          <div class="ctas" data-hero="ctas">
-            <a class="btn dark" href="mailto:luka.dadiani@me.com">
-              <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="2.25" y="3.25" width="13.5" height="11.5" rx="2"/><path d="m2.75 5.5 6.25 4 6.25-4"/>
-              </svg>Get in touch
-            </a>
-            <a class="btn light" href="https://www.linkedin.com/in/lukadadiani/" target="_blank" rel="noopener">
-              <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M2.95 5A7.25 7.25 0 1 1 2.95 13"/><polyline points="8 12.25 11.25 9 8 5.75"/><line x1="11.25" y1="9" x2="1.75" y2="9"/>
-              </svg>LinkedIn
-            </a>
-          </div>
-
-          <a class="mailto" data-hero="mailto" href="#work">See selected work <b>&rsaquo;</b></a>
-
-          <div data-hero="lede">
-            <p class="lede">Product manager and senior designer. London.</p>
-            <p class="lede">Ten years making regulated, legacy-bound software feel obvious.</p>
-          </div>
-
-          <a class="more" data-hero="more" href="#letter"><span>learn more</span><span class="dots"></span></a>
-        </div>
-      </div>
-
       <div class="canvas-fx" aria-hidden="true">
-        <div class="ribbon"><i></i><i></i><i></i></div>
+      <div class="ribbon"><i></i><i></i><i></i></div>
 
-        <!-- One <svg> per ring rather than eight <g> in one <svg>: animating
-             groups inside a single SVG re-rasterises the whole 1700pt drawing
-             every frame. Separate elements each get their own compositor
-             layer and the rotation costs nothing. -->
-        <div class="shapes">
-          <div class="spin">
-          <div class="ring"><svg viewBox="0 0 1709 1709" fill="none">
-            <path d="M1457.94 250.48 1708.01 854.21l-250.07 603.73-603.73 250.07-603.73-250.07L.41 854.21 250.48 250.48 854.21.41z" stroke="#131315" stroke-opacity=".055" stroke-width=".85"/></svg></div>
-          <div class="ring"><svg viewBox="0 0 1709 1709" fill="none">
-            <path d="M1301.49 406.93 1486.76 854.21l-185.27 447.28-447.28 185.27-447.28-185.27L221.66 854.21l185.27-447.28 447.28-185.27z" stroke="#131315" stroke-opacity=".06" stroke-width=".85"/></svg></div>
-          <div class="ring"><svg viewBox="0 0 1709 1709" fill="none">
-            <path d="M1233.06 475.35 1389.99 854.21l-156.93 378.86-378.86 156.92-378.86-156.92L318.42 854.21l156.93-378.86 378.86-156.93z" stroke="#131315" stroke-opacity=".055" stroke-width=".85"/></svg></div>
-          <div class="ring"><svg viewBox="0 0 1709 1709" fill="none">
-            <path d="M1219.26 643.44v421.53L854.2 1275.74l-365.07-210.77V643.44L854.2 432.67z" stroke="#131315" stroke-opacity=".065" stroke-width=".85"/></svg></div>
-          <div class="ring"><svg viewBox="0 0 1709 1709" fill="none">
-            <path d="M1061.6 646.81 1147.51 854.21l-85.91 207.39-207.4 85.9-207.39-85.9-85.9-207.39 85.9-207.4 207.39-85.9z" stroke="#131315" stroke-opacity=".065" stroke-width=".85"/></svg></div>
-          <div class="ring"><svg viewBox="0 0 1709 1709" fill="none">
-            <path d="M1023.4 756.52v195.37L854.2 1049.58l-169.19-97.69V756.52l169.19-97.68z" stroke="#131315" stroke-opacity=".07" stroke-width=".85"/></svg></div>
-          <div class="ring"><svg viewBox="0 0 1709 1709" fill="none">
-            <path d="M925.52 782.9 955.05 854.21l-29.54 71.3-71.31 29.54-71.3-29.54-29.54-71.3 29.54-71.31 71.3-29.54z" stroke="#131315" stroke-opacity=".075" stroke-width=".85"/>
-            <path d="M912.29 820.67v67.07l-58.08 33.53-58.09-33.53v-67.07l58.09-33.53z" stroke="#131315" stroke-opacity=".075" stroke-width=".85"/></svg></div>
-          <svg class="beams" viewBox="0 0 1709 1709" fill="none"
-               stroke="#131315" stroke-opacity=".09" stroke-width=".85">
-            <line class="beam" x1="917.85" y1="790.57" x2="1250.19" y2="458.23" style="--len:470;--seg:212;stroke-dasharray:212 682;animation-delay:0s;animation-duration:13s"/>
-            <line class="beam" x1="917.85" y1="917.85" x2="1306.76" y2="1306.76" style="--len:550;--seg:248;stroke-dasharray:248 798;animation-delay:3.2s;animation-duration:15s"/>
-            <line class="beam" x1="764.21" y1="854.21" x2="354.21" y2="854.21" style="--len:410;--seg:185;stroke-dasharray:185 595;animation-delay:5.6s;animation-duration:12s"/>
-            <line class="beam" x1="790.57" y1="790.57" x2="359.23" y2="359.23" style="--len:610;--seg:275;stroke-dasharray:275 885;animation-delay:8.1s;animation-duration:16s"/>
-            <line class="beam" x1="854.21" y1="944.21" x2="854.21" y2="1274.21" style="--len:330;--seg:149;stroke-dasharray:149 479;animation-delay:10.4s;animation-duration:13s"/>
-            <line class="beam" x1="944.21" y1="854.21" x2="1474.21" y2="854.21" style="--len:530;--seg:239;stroke-dasharray:239 769;animation-delay:12.7s;animation-duration:15s"/>
-            <line class="beam" x1="854.21" y1="764.21" x2="854.21" y2="314.21" style="--len:450;--seg:203;stroke-dasharray:203 653;animation-delay:15.3s;animation-duration:14s"/>
-          </svg>
-          </div>
-        </div>
+      <!-- One <svg> per ring rather than eight <g> in one <svg>: animating
+      groups inside a single SVG re-rasterises the whole 1700pt drawing
+      every frame. Separate elements each get their own compositor
+      layer and the rotation costs nothing. -->
+      <div class="shapes">
+      <div class="spin">
+      <div class="ring"><svg viewBox="0 0 1709 1709" fill="none">
+      <path d="M1457.94 250.48 1708.01 854.21l-250.07 603.73-603.73 250.07-603.73-250.07L.41 854.21 250.48 250.48 854.21.41z" stroke="#131315" stroke-opacity=".055" stroke-width=".85"/></svg></div>
+      <div class="ring"><svg viewBox="0 0 1709 1709" fill="none">
+      <path d="M1301.49 406.93 1486.76 854.21l-185.27 447.28-447.28 185.27-447.28-185.27L221.66 854.21l185.27-447.28 447.28-185.27z" stroke="#131315" stroke-opacity=".06" stroke-width=".85"/></svg></div>
+      <div class="ring"><svg viewBox="0 0 1709 1709" fill="none">
+      <path d="M1233.06 475.35 1389.99 854.21l-156.93 378.86-378.86 156.92-378.86-156.92L318.42 854.21l156.93-378.86 378.86-156.93z" stroke="#131315" stroke-opacity=".055" stroke-width=".85"/></svg></div>
+      <div class="ring"><svg viewBox="0 0 1709 1709" fill="none">
+      <path d="M1219.26 643.44v421.53L854.2 1275.74l-365.07-210.77V643.44L854.2 432.67z" stroke="#131315" stroke-opacity=".065" stroke-width=".85"/></svg></div>
+      <div class="ring"><svg viewBox="0 0 1709 1709" fill="none">
+      <path d="M1061.6 646.81 1147.51 854.21l-85.91 207.39-207.4 85.9-207.39-85.9-85.9-207.39 85.9-207.4 207.39-85.9z" stroke="#131315" stroke-opacity=".065" stroke-width=".85"/></svg></div>
+      <div class="ring"><svg viewBox="0 0 1709 1709" fill="none">
+      <path d="M1023.4 756.52v195.37L854.2 1049.58l-169.19-97.69V756.52l169.19-97.68z" stroke="#131315" stroke-opacity=".07" stroke-width=".85"/></svg></div>
+      <div class="ring"><svg viewBox="0 0 1709 1709" fill="none">
+      <path d="M925.52 782.9 955.05 854.21l-29.54 71.3-71.31 29.54-71.3-29.54-29.54-71.3 29.54-71.31 71.3-29.54z" stroke="#131315" stroke-opacity=".075" stroke-width=".85"/>
+      <path d="M912.29 820.67v67.07l-58.08 33.53-58.09-33.53v-67.07l58.09-33.53z" stroke="#131315" stroke-opacity=".075" stroke-width=".85"/></svg></div>
+      <svg class="beams" viewBox="0 0 1709 1709" fill="none"
+      stroke="#131315" stroke-opacity=".09" stroke-width=".85">
+      <line class="beam" x1="917.85" y1="790.57" x2="1250.19" y2="458.23" style="--len:470;--seg:212;stroke-dasharray:212 682;animation-delay:0s;animation-duration:13s"/>
+      <line class="beam" x1="917.85" y1="917.85" x2="1306.76" y2="1306.76" style="--len:550;--seg:248;stroke-dasharray:248 798;animation-delay:3.2s;animation-duration:15s"/>
+      <line class="beam" x1="764.21" y1="854.21" x2="354.21" y2="854.21" style="--len:410;--seg:185;stroke-dasharray:185 595;animation-delay:5.6s;animation-duration:12s"/>
+      <line class="beam" x1="790.57" y1="790.57" x2="359.23" y2="359.23" style="--len:610;--seg:275;stroke-dasharray:275 885;animation-delay:8.1s;animation-duration:16s"/>
+      <line class="beam" x1="854.21" y1="944.21" x2="854.21" y2="1274.21" style="--len:330;--seg:149;stroke-dasharray:149 479;animation-delay:10.4s;animation-duration:13s"/>
+      <line class="beam" x1="944.21" y1="854.21" x2="1474.21" y2="854.21" style="--len:530;--seg:239;stroke-dasharray:239 769;animation-delay:12.7s;animation-duration:15s"/>
+      <line class="beam" x1="854.21" y1="764.21" x2="854.21" y2="314.21" style="--len:450;--seg:203;stroke-dasharray:203 653;animation-delay:15.3s;animation-duration:14s"/>
+      </svg>
+      </div>
+      </div>
       </div>
 
-      <!-- --------------------------- letter --------------------------- -->
       <div class="letter-view" data-letter-view>
-        <div class="letter-flow" data-flow>
-          <p class="lead">The hardest products are the ones nobody wants to design. Regulated. Legacy-bound. Full of edge cases, where an edge case is a satellite or a fine-art shipment crossing a border.</p>
+      <div class="letter-flow" data-flow>
+      <p class="lead">The hardest products are the ones nobody wants to design. Regulated. Legacy-bound. Full of edge cases, where an edge case is a satellite or a fine-art shipment crossing a border.</p>
 
-          <p>I have spent ten years there. Seven as a designer, the last four running a specialty risk placement platform in the London market: around £200M of premium a year, a thousand brokers, and no patience whatsoever for bad software.</p>
+      <p>I have spent ten years there. Seven as a designer, the last four running a specialty risk placement platform in the London market: around £200M of premium a year, a thousand brokers, and no patience whatsoever for bad software.</p>
 
-          <p>The work is rarely the screen. It was the sixty parcels I posted across the UK to find out which courier actually delivers. The config tool I prototyped because configuration, not design, was the thing capping our growth. The dashboard I argued us out of building.</p>
+      <p>The work is rarely the screen. It was the sixty parcels I posted across the UK to find out which courier actually delivers. The config tool I prototyped because configuration, not design, was the thing capping our growth. The dashboard I argued us out of building.</p>
 
-          <p class="pull">Find the constraint limiting the system, not the screen in front of you.</p>
+      <p class="pull">Find the constraint limiting the system, not the screen in front of you.</p>
 
-          <p>Kill the features that do not earn their complexity. Stay close enough to the craft to be useful in the Figma file and the sprint board on the same day.</p>
+      <p>Kill the features that do not earn their complexity. Stay close enough to the craft to be useful in the Figma file and the sprint board on the same day.</p>
 
-          <p>Then ship it, and go and measure whether it worked.</p>
-        </div>
+      <p>Then ship it, and go and measure whether it worked.</p>
+      </div>
       </div>
 
       <div class="letter-prism" data-prism aria-hidden="true">
-        <div class="ribbon hot"><i></i><i></i><i></i></div>
+      <div class="ribbon hot"><i></i><i></i><i></i></div>
       </div>
-
     </div>
+
   </div>
 </section>
 

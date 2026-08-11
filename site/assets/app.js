@@ -100,6 +100,10 @@
     line = cardH * .44;
     run = cardH * .30;
 
+    // the canvas stays full-bleed, so the letter needs its own inset to sit
+    // inside the visual card — one write per layout, never per frame
+    view.style.top = view.style.bottom = padY + 'px';
+
     morphD = Math.round(ih * .85);
     D = Math.round(morphD + (startY - endY) * 1.12);
 
@@ -124,13 +128,13 @@
     if (Math.abs(mp - lastMp) > .0005) {
       lastMp = mp;
 
-      // smoothstep so the card settles into place rather than arriving flat
+      // smoothstep so the card settles into place rather than arriving flat.
+      // One clip-path write, not five box offsets: no layout, and the layers
+      // underneath keep the raster they already had.
       const e = mp * mp * (3 - 2 * mp);
-      const ty = (e * padY).toFixed(1) + 'px';
-      const tx = (e * padX).toFixed(1) + 'px';
-      canvas.style.top = canvas.style.bottom = ty;
-      canvas.style.left = canvas.style.right = tx;
-      canvas.style.borderRadius = (e * RADIUS).toFixed(1) + 'px';
+      const ty = (e * padY).toFixed(1);
+      const tx = (e * padX).toFixed(1);
+      canvas.style.clipPath = `inset(${ty}px ${tx}px round ${(e * RADIUS).toFixed(1)}px)`;
 
       // hero is gone by the halfway point, so the exchange with the prose
       // reads as a handoff rather than two layers competing
