@@ -40,39 +40,49 @@ ul{padding:0;list-style:none}
 /* ============================================================
    prism ribbon — CSS stand-in for octolane's WebGL caustic
    ============================================================ */
-/* A stack of very heavily blurred boxes. Nothing transforms this on scroll
-   any more — moving it re-ran the blur every frame — so it needs no layer. */
+/* Soft-edged gradients, deliberately NOT `filter: blur()`.
+   The blur was the whole performance problem: six large blurred layers that
+   the compositor cannot cache, re-rasterised by anything moving over them —
+   and the letter moves 170 words over them on every frame. A radial gradient
+   that fades to transparent is already soft at the edges, costs nothing to
+   paint, and scales to any viewport without artefacts. */
 .ribbon{
-  position:absolute;left:50%;top:60%;width:132vw;height:30vh;
-  transform:translate(-50%,-50%);
+  position:absolute;left:50%;top:58%;width:130vw;height:52vh;
+  transform:translate(-50%,-50%) rotate(-3deg);
   pointer-events:none;
-  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 26%,#000 74%,transparent),
-                     linear-gradient(to right,transparent 2%,#000 26%,#000 74%,transparent 98%);
-          mask-image:linear-gradient(to bottom,transparent,#000 26%,#000 74%,transparent),
-                     linear-gradient(to right,transparent 2%,#000 26%,#000 74%,transparent 98%);
-  -webkit-mask-composite:source-in;mask-composite:intersect;
 }
-.ribbon i{position:absolute;left:0;right:0;display:block;border-radius:50%;will-change:transform,opacity}
+.ribbon i{position:absolute;inset:0;display:block;will-change:transform}
+
+/* the wide atmospheric bloom */
 .ribbon i:nth-child(1){
-  background:linear-gradient(95deg,transparent 6%,#4a8cff 19%,#63d8ff 30%,#dff6ff 40%,
-    #ffffff 49%,#fff3d0 58%,#ffbb45 70%,#ff7a3d 82%,transparent 95%);
-  height:40%;top:30%;opacity:.55;filter:blur(38px) saturate(1.35);transform:rotate(-3.6deg);
-  animation:swell 19s var(--ease) infinite alternate;
+  opacity:.62;
+  background:
+    radial-gradient(ellipse 26% 44% at 22% 50%, rgba(47,125,255,.60), rgba(47,125,255,0) 72%),
+    radial-gradient(ellipse 22% 34% at 37% 50%, rgba(99,216,255,.55), rgba(99,216,255,0) 72%),
+    radial-gradient(ellipse 20% 30% at 50% 50%, rgba(255,255,255,.75), rgba(255,255,255,0) 72%),
+    radial-gradient(ellipse 22% 34% at 63% 50%, rgba(255,219,138,.60), rgba(255,219,138,0) 72%),
+    radial-gradient(ellipse 26% 44% at 79% 50%, rgba(255,138,45,.58), rgba(255,138,45,0) 72%);
+  animation:swell 21s var(--ease) infinite alternate;
 }
+/* the ribbon proper */
 .ribbon i:nth-child(2){
-  background:linear-gradient(94deg,transparent 14%,#2f7dff 27%,#7fe4ff 38%,#ffffff 50%,
-    #ffdb8a 62%,#ff9a2e 74%,transparent 88%);
-  height:15%;top:42%;opacity:.8;filter:blur(13px) saturate(1.5);transform:rotate(-3deg);
-  animation:swell2 24s var(--ease) infinite alternate;
+  opacity:.85;
+  background:
+    radial-gradient(ellipse 20% 13% at 26% 50%, rgba(47,125,255,.85), rgba(47,125,255,0) 74%),
+    radial-gradient(ellipse 17% 10% at 39% 50%, rgba(127,228,255,.85), rgba(127,228,255,0) 74%),
+    radial-gradient(ellipse 16% 8%  at 51% 50%, rgba(255,255,255,.95), rgba(255,255,255,0) 74%),
+    radial-gradient(ellipse 17% 10% at 62% 50%, rgba(255,219,138,.9), rgba(255,219,138,0) 74%),
+    radial-gradient(ellipse 20% 13% at 75% 50%, rgba(255,154,46,.85), rgba(255,154,46,0) 74%);
+  animation:swell2 26s var(--ease) infinite alternate;
 }
+/* the hot core line */
 .ribbon i:nth-child(3){
-  background:linear-gradient(92deg,transparent 26%,#ffffff 45%,#ffffff 57%,transparent 76%);
-  height:4%;top:47.5%;filter:blur(5px);transform:rotate(-3.2deg);
-  animation:swell3 15s var(--ease) infinite alternate;
+  background:radial-gradient(ellipse 30% 1.6% at 50% 50%, rgba(255,255,255,1), rgba(255,255,255,0) 76%);
+  animation:swell3 17s var(--ease) infinite alternate;
 }
-@keyframes swell {to{transform:rotate(-2.2deg) scaleY(1.14) translateY(-1.4vh)}}
-@keyframes swell2{to{transform:rotate(-4.4deg) translate(2vw,.8vh) scaleY(1.3)}}
-@keyframes swell3{to{transform:rotate(-2.1deg) translateY(-.5vh) scaleX(1.06)}}
+@keyframes swell {to{transform:scale(1.06,1.14) translateY(-1.2%)}}
+@keyframes swell2{to{transform:scale(1.04,1.22) translate(1.4%,.6%)}}
+@keyframes swell3{to{transform:scaleX(1.07) translateY(-.4%)}}
 
 /* ============================================================
    shell — the hero canvas that becomes the letter card
@@ -85,9 +95,9 @@ ul{padding:0;list-style:none}
   background:radial-gradient(120% 80% at 50% 8%,#f2f2f4 0%,var(--canvas) 55%,#dedee2 100%);
 }
 .canvas-fx{position:absolute;inset:0;z-index:0}
-/* a little taller than the base ribbon: once the canvas has contracted into
-   the card, a thin band would only ever cross a line or two of the prose */
-.canvas .ribbon{top:58%;height:42vh}
+/* sized against the canvas, not the viewport, so the beam contracts with the
+   card instead of overflowing it once the morph has run */
+.canvas .ribbon{top:56%;width:136%;height:78%}
 .canvas-fx .ribbon{opacity:.85}
 
 .hero-layer{
@@ -271,14 +281,21 @@ h1{
    exactly on top of the one in .canvas-fx — two beams half a screen apart
    read as a smear, one beam reinforced reads as light */
 .letter-prism .ribbon{opacity:.9}
-.letter-prism .ribbon i:nth-child(1){filter:blur(40px) saturate(1.5);opacity:.34}
-.letter-prism .ribbon i:nth-child(2){filter:blur(14px) saturate(1.7);opacity:.8}
-.letter-prism .ribbon i:nth-child(3){filter:blur(5px);opacity:.9}
+/* the blend layer just runs hotter and tighter — same gradients, no filters */
+.letter-prism .ribbon i:nth-child(1){opacity:.4}
+.letter-prism .ribbon i:nth-child(2){opacity:.95}
+.letter-prism .ribbon i:nth-child(3){opacity:1}
 
+/* The fade is a property of the card, not of the words. It used to be 170
+   per-word opacity writes every frame; as a mask on the viewport it is one
+   static declaration the compositor applies for free, and the prose simply
+   scrolls underneath it. */
 .letter-view{
   position:absolute;inset:0;z-index:3;overflow:hidden;opacity:0;
-  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 9%,#000 100%);
-          mask-image:linear-gradient(to bottom,transparent 0,#000 9%,#000 100%);
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 10%,#000 44%,
+                     rgba(0,0,0,.45) 60%,rgba(0,0,0,.14) 76%,transparent 92%);
+          mask-image:linear-gradient(to bottom,transparent 0,#000 10%,#000 44%,
+                     rgba(0,0,0,.45) 60%,rgba(0,0,0,.14) 76%,transparent 92%);
 }
 .letter-flow{
   position:absolute;top:0;left:50%;width:min(660px,86vw);
@@ -296,7 +313,6 @@ h1{
   font-family:var(--serif);font-size:clamp(23px,2.4vw,32px);line-height:1.3;
   letter-spacing:-.015em;margin:1.1em 0 1.25em;
 }
-.letter-flow .w{opacity:.18;filter:blur(3px)}
 
 /* ============================================================
    work

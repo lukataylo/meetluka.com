@@ -81,8 +81,12 @@
   function measure() {
     ih = innerHeight;
     shellTop = shell.offsetTop;
-    padY = Math.round(ih * .06);
-    padX = Math.round(Math.min(30, innerWidth * .022));
+    // The card is a panel, not a full-bleed pane: roughly 78% of the viewport
+    // wide (capped so it stays a card on very wide screens) and inset top and
+    // bottom. Narrow screens keep tight margins — there is no width to give away.
+    const narrow = innerWidth < 760;
+    padY = Math.round(ih * (narrow ? .05 : .13));
+    padX = narrow ? 14 : Math.round((innerWidth - Math.min(innerWidth * .78, 1560)) / 2);
     cardH = ih - padY * 2;
 
     const flowH = flow.offsetHeight;
@@ -148,13 +152,18 @@
 
     const y = startY + (endY - startY) * lp;
     flow.style.transform = `translate(-50%, ${y.toFixed(1)}px)`;
+
+    // The fade is handled by the mask on .letter-view. All that is left here is
+    // the softening, and only for words actually crossing the reading line —
+    // roughly twenty at a time rather than all hundred and seventy. Blurring
+    // text that the mask has already faded to nothing costs a repaint and buys
+    // nothing.
     for (let i = 0; i < letterWords.length; i++) {
       const d = clamp((tops[i] + y - line) / run);
-      if (Math.abs(d - last[i]) < .006) continue;
-      last[i] = d;
-      const w = letterWords[i];
-      w.style.opacity = (1 - d * .84).toFixed(3);
-      w.style.filter = d > .02 ? `blur(${(d * 4.2).toFixed(2)}px)` : 'none';
+      const blur = d > .04 && d < .72 ? (d - .04) * 3.4 : 0;
+      if (Math.abs(blur - last[i]) < .04) continue;
+      last[i] = blur;
+      letterWords[i].style.filter = blur ? `blur(${blur.toFixed(2)}px)` : '';
     }
 
     // once the letter has landed, the card recedes rather than trundling
