@@ -13,6 +13,10 @@ export default defineConfig(({ mode }) => {
   const isAnalyze = process.env.ANALYZE === 'true';
 
   return {
+    /* The OS-style portfolio is retired to meetluka.com/os/. The domain root is
+       now served by the static site in `site/`, which the Pages workflow copies
+       over the top of this build. */
+    base: '/os/',
     server: {
       port: 3000,
       host: '0.0.0.0',
@@ -79,6 +83,9 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
+      // built into a subdirectory so `site/` can own the artifact root
+      outDir: 'dist/os',
+      emptyOutDir: true,
       chunkSizeWarningLimit: 200,
       rollupOptions: {
         output: {

@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>xTrade case study — Four legacy systems, one placement platform | Luka Dadiani</title>
+<meta name="description" content="Aviation, Renewables, Cargo and Fine Art each had their own application, their own dev team and their own way of capturing risk. I consolidated them, and…">
+<meta name="theme-color" content="#e9e9ec">
+<link rel="canonical" href="https://meetluka.com/work/xtrade.html">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Luka Dadiani">
+<meta property="og:url" content="https://meetluka.com/work/xtrade.html">
+<meta property="og:title" content="xTrade case study — Four legacy systems, one placement platform | Luka Dadiani">
+<meta property="og:description" content="Aviation, Renewables, Cargo and Fine Art each had their own application, their own dev team and their own way of capturing risk. I consolidated them, and…">
+<meta property="og:image" content="https://meetluka.com/assets/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="xTrade case study — Four legacy systems, one placement platform | Luka Dadiani">
+<meta name="twitter:description" content="Aviation, Renewables, Cargo and Fine Art each had their own application, their own dev team and their own way of capturing risk. I consolidated them, and…">
+<meta name="twitter:image" content="https://meetluka.com/assets/og.jpg">
+
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<style>/* ============================================================
+   Luka Dadiani — tokens
+   ============================================================ */
+:root{
+  --ease:cubic-bezier(.22,1,.36,1);
+  --canvas:#e9e9ec;
+  --paper:#f4f5f7;
+  --ink:#131315;
+  --ink-11:rgba(19,19,21,.68);
+  --ink-10:rgba(19,19,21,.52);
+  --faint:rgba(19,19,21,.30);
+  --rule:rgba(10,11,13,.09);
+  --night:#0b0b0c;
+
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,Cambria,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Geist Mono",Menlo,Consolas,monospace;
+}
+
+/* The ambient loops — the drifting ribbon, the turning polygon field, the
+   travelling beams — each force their heavily blurred layers to re-rasterise
+   on every frame. That is invisible when the page is still and ruinous when
+   it is scrolling (30fps → 60fps just by holding them). They resume as soon
+   as scrolling stops, which is the only time anyone watches them. */
+[data-still] .spin,
+[data-still] .ribbon i,
+[data-still] .beam{animation-play-state:paused}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  margin:0;background:#fff;color:var(--ink);overflow-x:clip;
+  font:400 15px/1.65 var(--sans);
+  font-feature-settings:"kern","ss01";-webkit-font-smoothing:antialiased;
+}
+a{color:inherit}
+h1,h2,h3,p,ul{margin:0}
+ul{padding:0;list-style:none}
+
+/* ============================================================
+   prism ribbon — CSS stand-in for octolane's WebGL caustic
+   ============================================================ */
+/* A stack of very heavily blurred boxes. Nothing transforms this on scroll
+   any more — moving it re-ran the blur every frame — so it needs no layer. */
+.ribbon{
+  position:absolute;left:50%;top:60%;width:132vw;height:30vh;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 26%,#000 74%,transparent),
+                     linear-gradient(to right,transparent 2%,#000 26%,#000 74%,transparent 98%);
+          mask-image:linear-gradient(to bottom,transparent,#000 26%,#000 74%,transparent),
+                     linear-gradient(to right,transparent 2%,#000 26%,#000 74%,transparent 98%);
+  -webkit-mask-composite:source-in;mask-composite:intersect;
+}
+.ribbon i{position:absolute;left:0;right:0;display:block;border-radius:50%;will-change:transform,opacity}
+.ribbon i:nth-child(1){
+  background:linear-gradient(95deg,transparent 6%,#4a8cff 19%,#63d8ff 30%,#dff6ff 40%,
+    #ffffff 49%,#fff3d0 58%,#ffbb45 70%,#ff7a3d 82%,transparent 95%);
+  height:40%;top:30%;opacity:.55;filter:blur(38px) saturate(1.35);transform:rotate(-3.6deg);
+  animation:swell 19s var(--ease) infinite alternate;
+}
+.ribbon i:nth-child(2){
+  background:linear-gradient(94deg,transparent 14%,#2f7dff 27%,#7fe4ff 38%,#ffffff 50%,
+    #ffdb8a 62%,#ff9a2e 74%,transparent 88%);
+  height:15%;top:42%;opacity:.8;filter:blur(13px) saturate(1.5);transform:rotate(-3deg);
+  animation:swell2 24s var(--ease) infinite alternate;
+}
+.ribbon i:nth-child(3){
+  background:linear-gradient(92deg,transparent 26%,#ffffff 45%,#ffffff 57%,transparent 76%);
+  height:4%;top:47.5%;filter:blur(5px);transform:rotate(-3.2deg);
+  animation:swell3 15s var(--ease) infinite alternate;
+}
+@keyframes swell {to{transform:rotate(-2.2deg) scaleY(1.14) translateY(-1.4vh)}}
+@keyframes swell2{to{transform:rotate(-4.4deg) translate(2vw,.8vh) scaleY(1.3)}}
+@keyframes swell3{to{transform:rotate(-2.1deg) translateY(-.5vh) scaleX(1.06)}}
+
+/* ============================================================
+   shell — the hero canvas that becomes the letter card
+   ============================================================ */
+.emblem{width:52px;height:52px;color:var(--ink)}
+
+/* shared atoms — used above the fold by both page types */
+.badge{
+  display:grid;place-items:center;width:34px;height:34px;border-radius:10px;flex:0 0 auto;
+  background:var(--brand);color:#fff;
+}
+.badge svg{width:18px;height:18px}
+.meta{
+  margin-left:2px;font:400 10.5px var(--mono);text-transform:uppercase;letter-spacing:.1em;
+  color:var(--faint);align-self:center;padding-top:2px;
+}
+.w{display:inline-block}
+
+/* ------------------------------------------------------------
+   entrance — CSS, not GSAP. The headline is the LCP element, and
+   hanging it off a 46KB script meant the largest paint could not
+   happen until that script had downloaded, parsed and run. These
+   start at first paint and work with JS disabled entirely.
+   ------------------------------------------------------------ */
+@keyframes enter-up  {from{opacity:0;transform:translateY(14px)}}
+@keyframes enter-word{from{opacity:0;transform:translateY(55%)}}
+@keyframes enter-mark{from{opacity:0;transform:translateY(-14px) scale(.86)}}
+@keyframes enter-fade{from{opacity:0}}
+@keyframes type      {from{clip-path:inset(0 100% 0 0)}}
+
+.reveal{
+  opacity:0;transform:translateY(26px);
+  transition:opacity .85s var(--ease),transform .85s var(--ease);
+  transition-delay:calc(var(--d,0) * 90ms);
+}
+.reveal.in{opacity:1;transform:none}
+
+/* same mechanism, per word — the footer heading is static text, so it is
+   pre-split in the markup and needs no splitter at runtime */
+.wordset .w{
+  opacity:0;transform:translateY(70%);
+  transition:opacity .9s var(--ease),transform .9s var(--ease);
+  transition-delay:calc(var(--i) * 60ms);
+}
+.wordset.in .w{opacity:1;transform:none}
+
+.btn{
+  display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;
+  border-radius:999px;font:500 15px var(--sans);text-decoration:none;
+  transition:box-shadow .25s var(--ease),transform .25s var(--ease),background-color .25s var(--ease);
+}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:scale(.98)}
+.btn.dark{background:#18181a;color:#fafafa}
+.btn.dark:hover{background:#0b0b0c}
+.btn.light{background:rgba(255,255,255,.88);color:var(--ink);backdrop-filter:blur(10px)}
+.btn.light:hover{box-shadow:0 0 0 .5px rgba(0,0,0,.2),0 2px 4px -2px rgba(0,0,0,.12),
+                            0 6px 20px -8px rgba(0,0,0,.16)}
+.btn svg{width:17px;height:17px;flex:0 0 auto}
+
+/* ============================================================
+   island nav
+   ============================================================ */
+.island{
+  position:fixed;left:50%;top:28px;z-index:245;
+  transform:translateX(-50%) translateY(-140%);opacity:0;
+  transition:transform .5s var(--ease),opacity .45s var(--ease);
+}
+.island.on{transform:translateX(-50%);opacity:1}
+.island div{
+  display:flex;align-items:center;height:42px;padding:0 5px 0 14px;border-radius:999px;
+  background:rgba(16,16,18,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  box-shadow:0 8px 30px -10px rgba(0,0,0,.5);
+}
+.island .name{display:flex;align-items:center;gap:9px;margin-right:12px;
+  color:#fff;text-decoration:none;font-size:17px;font-weight:300;letter-spacing:-.01em}
+.island .name svg{width:18px;height:18px}
+.island a.lnk{
+  display:flex;align-items:center;height:32px;padding:0 10px;border-radius:8px;
+  color:rgba(255,255,255,.72);text-decoration:none;font-size:14.5px;
+  transition:color .15s var(--ease)}
+.island a.lnk:hover{color:#fff}
+.island a.cta{
+  margin-left:8px;height:32px;padding:0 12px;border-radius:999px;display:flex;align-items:center;
+  background:#fff;color:var(--ink);text-decoration:none;font-size:14.5px;font-weight:500}
+.island .name,.island a.lnk,.island a.cta{white-space:nowrap;flex:0 0 auto}
+@media (max-width:640px){
+  .island a.lnk{display:none}
+  .island div{height:40px;padding:0 4px 0 12px}
+  .island .name{font-size:15px;margin-right:10px}
+  .island .name svg{width:16px;height:16px}
+  .island a.cta{height:30px;padding:0 11px;font-size:13.5px}
+}
+
+.progress{position:fixed;left:0;top:0;right:0;height:2px;z-index:300;pointer-events:none}
+.progress i{display:block;height:100%;transform:scaleX(0);transform-origin:left center;
+  background:linear-gradient(90deg,#2f7dff,#7fe4ff 38%,#ffdb8a 66%,#ff9a2e)}
+
+.is-case .island{opacity:1;transform:translateX(-50%)}
+
+.cs-hero{
+  position:relative;overflow:hidden;padding:150px 24px 92px;
+  background:radial-gradient(120% 90% at 50% 0%,#f2f2f4 0%,var(--canvas) 58%,#dedee2 100%);
+}
+.cs-hero .ribbon{top:74%;height:34vh;opacity:.8;z-index:0}
+.cs-hero-in{position:relative;z-index:2;max-width:820px;margin:0 auto}
+
+.cs-back{
+  display:inline-flex;align-items:center;gap:7px;text-decoration:none;
+  font:400 11.5px var(--mono);text-transform:uppercase;letter-spacing:.12em;
+  color:var(--ink-10);transition:color .2s var(--ease);
+}
+.cs-back:hover{color:var(--ink)}
+.cs-back b{font-weight:400;font-size:15px;line-height:1;transition:transform .25s var(--ease)}
+.cs-back:hover b{transform:translateX(-3px)}
+
+.cs-id{display:flex;align-items:center;gap:12px;margin-top:36px}
+.cs-name{font-size:22px;letter-spacing:-.015em}
+
+.cs-hero h1{
+  margin:22px 0 0;font-family:var(--serif);font-weight:400;
+  font-size:clamp(38px,6vw,68px);line-height:1.06;letter-spacing:-.02em;
+}
+/* entrance, in CSS for the same reason as the home hero — this h1 is the
+   LCP element on every case page */
+.cs-back{animation:enter-fade .5s var(--ease) backwards}
+.cs-id{animation:enter-up .5s var(--ease) .1s backwards}
+.cs-hero h1 .w{animation:enter-word .68s var(--ease) backwards;
+  animation-delay:calc(.18s + var(--i) * .04s)}
+.cs-tagline{animation:enter-up .6s var(--ease) .46s backwards}
+.cs-meta>div{animation:enter-up .55s var(--ease) backwards}
+.cs-meta>div:nth-child(1){animation-delay:.58s}
+.cs-meta>div:nth-child(2){animation-delay:.64s}
+.cs-meta>div:nth-child(3){animation-delay:.70s}
+.cs-meta>div:nth-child(4){animation-delay:.76s}
+.cs-tagline{margin:26px 0 0;max-width:56ch;font-size:18px;line-height:1.65;color:var(--ink-11)}
+
+.cs-meta{
+  display:grid;gap:20px 40px;margin:46px 0 0;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  padding-top:26px;border-top:1px solid var(--rule);
+}
+.cs-meta dt{font:400 10.5px var(--mono);text-transform:uppercase;letter-spacing:.12em;color:var(--faint)}
+.cs-meta dd{margin:7px 0 0;font-size:15px;line-height:1.5;color:var(--ink)}
+
+/* --- body --- */
+.cs{max-width:820px;margin:0 auto;padding:0 24px}
+.cs-block{padding:56px 0 0}
+.cs-block h2{
+  margin:0;font-family:var(--serif);font-weight:400;
+  font-size:clamp(26px,3.2vw,34px);line-height:1.2;letter-spacing:-.018em;
+}
+/* the column is wide enough for the headings; the prose is held to a
+   comfortable measure inside it */
+.cs-block p{margin:20px 0 0;max-width:64ch;font-size:17px;line-height:1.75;
+  color:var(--ink-11);text-wrap:pretty}
+.cs-block p+p{margin-top:14px}
+.cs-num{
+  display:block;margin-bottom:14px;
+  font:400 11px var(--mono);letter-spacing:.16em;color:var(--faint);
+}
+
+/* --- NDA gate --- */
+.cs-gate{
+  max-width:520px;margin:72px auto 0;padding:38px 34px 34px;text-align:center;
+  border-radius:22px;background:var(--paper);
+}
+.cs-gate-icon{display:grid;place-items:center;width:42px;height:42px;margin:0 auto;
+  border-radius:50%;background:#fff;box-shadow:0 0 0 .5px var(--rule)}
+.cs-gate-icon svg{width:19px;height:19px}
+.cs-gate h2{margin:20px 0 0;font-family:var(--serif);font-weight:400;font-size:26px;letter-spacing:-.015em}
+.cs-gate p{margin:12px 0 0;font-size:15px;line-height:1.6;color:var(--ink-11)}
+.cs-gate a{color:var(--ink)}
+.cs-gate-row{display:flex;gap:8px;margin-top:22px}
+.cs-gate input{
+  flex:1;height:42px;padding:0 15px;border:none;border-radius:999px;
+  background:#fff;box-shadow:0 0 0 .5px var(--rule);
+  font:400 15px var(--sans);color:var(--ink);
+}
+.cs-gate input:focus{outline:2px solid #2f7dff;outline-offset:1px}
+.cs-gate button{
+  height:42px;padding:0 20px;border:none;border-radius:999px;cursor:pointer;
+  background:#18181a;color:#fafafa;font:500 15px var(--sans);
+  transition:background-color .2s var(--ease);
+}
+.cs-gate button:hover{background:#0b0b0c}
+.cs-gate-err{color:#b4292f}
+
+@media (max-width:700px){.cs-hero{padding:118px 22px 68px}}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .ribbon i,.spin,.beam{animation:none}
+  /* `both`-filled entrance animations revert to the settled state when the
+     animation is removed, so this is all that is needed to skip them */
+  .note-line,.hero-layer h1 .w,[data-hero],
+  [data-hero] .btn,[data-hero] .lede,
+  .cs-hero h1 .w{animation:none;clip-path:none}
+  .reveal,.wordset .w{opacity:1;transform:none;transition:none}
+  /* the canvas stops being a stage and becomes two ordinary blocks */
+  .shell-sticky{position:static;height:auto}
+  .canvas{position:relative;inset:auto;overflow:visible;padding-bottom:80px}
+  .hero-layer{position:relative;left:auto;transform:none;width:auto}
+  .letter-view{position:relative;inset:auto;overflow:visible;opacity:1;
+    -webkit-mask-image:none;mask-image:none}
+  .letter-flow{position:static;transform:none;margin:0 auto;left:auto}
+  .letter-flow .w{opacity:1;filter:none}
+  .letter-prism{display:none}
+  .island{opacity:1;transform:translateX(-50%)}
+}</style>
+<link rel="preload" as="style" href="../assets/rest.css" onload="this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="../assets/rest.css"></noscript>
+<script defer src="../assets/case.js"></script>
+</head>
+<body class="is-case">
+
+<div class="progress" aria-hidden="true"><i data-progress></i></div>
+
+<nav class="island" aria-label="Site">
+  <div>
+    <a class="name" href="../index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M8.6 2.2H15.4L21.8 8.6V15.4L15.4 21.8H8.6L2.2 15.4V8.6Z"/></svg>Luka Dadiani</a>
+    <a class="lnk" href="../index.html#letter">About</a>
+    <a class="lnk" href="../index.html#work">Work</a>
+    <a class="cta" href="mailto:luka.dadiani@me.com">Get in touch</a>
+  </div>
+</nav>
+
+<header class="cs-hero">
+  <div class="ribbon" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="cs-hero-in">
+    <a class="cs-back" href="../index.html#work"><b>&lsaquo;</b> Selected work</a>
+
+    <div class="cs-id">
+      <span class="badge" style="--brand:#1f7a5c">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 14.5V9M6.8 14.5V5M11.2 14.5V7.2M15.5 14.5V3.5"/></svg>
+      </span>
+      <span class="cs-name">xTrade</span>
+      <span class="meta">NDA</span>
+    </div>
+
+    <h1><span class="w" style="--i:0">Four</span> <span class="w" style="--i:1">legacy</span> <span class="w" style="--i:2">systems,</span><br><span class="w" style="--i:3">one</span> <span class="w" style="--i:4">placement</span> <span class="w" style="--i:5">platform</span></h1>
+    <p class="cs-tagline">Aviation, Renewables, Cargo and Fine Art each had their own application, their own dev team and their own way of capturing risk. I consolidated them, and became the product owner of the thing I had been designing.</p>
+
+    <dl class="cs-meta">
+      <div><dt>Role</dt><dd>Lead Product Designer → Product Owner</dd></div>
+      <div><dt>Team</dt><dd>17 cross-functional</dd></div>
+      <div><dt>Where</dt><dd>Howden Group</dd></div>
+      <div><dt>When</dt><dd>2021 – present</dd></div>
+    </dl>
+  </div>
+</header>
+
+<main class="cs">
+    <form class="cs-gate" data-gate data-key="Socrates14">
+      <span class="cs-gate-icon" aria-hidden="true">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.75" y="7.75" width="12.5" height="8.5" rx="2"/><path d="M5.75 7.75V5.5a3.25 3.25 0 0 1 6.5 0v2.25"/></svg>
+      </span>
+      <h2>This one is under NDA</h2>
+      <p>The detail below is shared with permission, not published. If you need the passphrase, <a href="mailto:luka.dadiani@me.com?subject=xTrade%20case%20study">ask me for it</a> — I answer quickly.</p>
+      <div class="cs-gate-row">
+        <input type="password" name="key" autocomplete="off" aria-label="Passphrase" placeholder="Passphrase">
+        <button type="submit">Unlock</button>
+      </div>
+      <p class="cs-gate-err" data-err hidden>That is not it. Try again, or email me.</p>
+    </form>
+    <div data-locked hidden>
+    <div class="cs-body">
+      
+      <section class="cs-block reveal">
+        
+        <h2>The strategic problem</h2>
+        <p>I had spent seven years in Howden’s internal design team, designing several of the 1.0 placement platforms. Each product line ran on its own stack, and the cost compounded in four directions at once.</p>
+        <p>Duplicated maintenance across multiple tech stacks. Launching a new product line meant building from scratch. Inconsistent data capture made analytics unreliable. And brokers had to learn a different interface for every product they touched.</p>
+      </section>
+
+      <section class="cs-block reveal">
+        
+        <h2>My role</h2>
+        <p>I joined as lead product designer and evolved into product owner. That transition happened because the problems required someone who could hold the user experience and the delivery reality in the same frame.</p>
+        <p>In practice: owning the roadmap and the prioritisation calls, leading a 17-person delivery team through standups and sprint planning, running weekly research with brokers and underwriters, managing a £1.5M annual budget, and partnering with North — the agency behind the Tate Modern and Co-op identities — on Howden’s digital design language.</p>
+      </section>
+
+      <section class="cs-block reveal">
+        <span class="cs-num">01</span>
+        <h2>The Outlook mental model</h2>
+        <p>Enterprise software fails when it asks users to abandon mental models they have spent years building. From the first round of interviews one thing was obvious: brokers live in Outlook.</p>
+        <p>So rather than imposing a novel paradigm, I leaned into what they already knew. A pane-based layout mirroring Outlook’s list-plus-detail pattern. Clear hierarchy for submissions, placements and market responses. Interaction patterns that felt immediately familiar.</p>
+        <p>We tested with groups of up to ten brokers. Onboarding friction was close to zero — people understood how to navigate in minutes rather than days.</p>
+      </section>
+
+      <section class="cs-block reveal">
+        <span class="cs-num">02</span>
+        <h2>The configuration tool nobody asked for</h2>
+        <p>As we onboarded more product lines, a bottleneck emerged. Product configuration was being done by hand in JSON. Early configs ran to a few hundred lines; they ballooned into the thousands, with field IDs reused across subsystems.</p>
+        <p>This was the constraint on our ability to scale, and it was invisible on any roadmap. Rather than asking for a dedicated engineering initiative, I prototyped the tool myself: automated ID generation and mapping across subsystems, product logic exposed visually instead of buried in raw JSON, validation before deployment, and a structure legible to people who do not read code.</p>
+        <p>Configuration timelines dropped by roughly a month per product. We have since launched five more products through it.</p>
+      </section>
+
+      <section class="cs-block reveal">
+        <span class="cs-num">03</span>
+        <h2>Export over dashboard</h2>
+        <p>Midway through the build, stakeholders asked for a dashboard. Charts, KPIs, visual reporting. I pushed back.</p>
+        <p>Having led Howden’s dashboard unification effort, I knew how dashboards actually get used here: people export to Excel, rebuild the view they need, and circulate a spreadsheet. So I proposed investing in export instead — clean column selection and filtering, formatting aligned to Excel workflows, and reliable performance on large datasets.</p>
+        <p>It met the real need at a fraction of the cost, and it scaled automatically as we added products. No dashboard redesign required.</p>
+      </section>
+
+      <section class="cs-block reveal">
+        
+        <h2>Design system and brand</h2>
+        <p>With 2.5 designers on the team, I led a system that standardised the components the platform actually runs on — tables, forms, pricing panels, filters — and defined typography, spacing and interaction patterns for consistency and accessibility, aligned to the brand direction we developed with North.</p>
+        <p>It has since been adopted across other Howden applications, which multiplied the original investment well beyond xTrade.</p>
+      </section>
+
+      <section class="cs-block cs-outcomes reveal">
+        <h2>Outcomes</h2>
+        <dl>
+          <div><dt>£1.5–2M</dt><dd>annual saving from legacy consolidation</dd></div>
+          <div><dt>~£200M</dt><dd>gross written premium processed a year</dd></div>
+          <div><dt>~1,000</dt><dd>enterprise users, including AXA, Aviva, Convex, Chubb and Hiscox</dd></div>
+          <div><dt>5</dt><dd>additional product lines launched via the configuration tool</dd></div>
+          <div><dt>~10 hrs</dt><dd>saved per stakeholder per week through structured MRC v3 capture</dd></div>
+        </dl>
+      </section>
+
+      <section class="cs-block cs-learned reveal">
+        <h2>What I learned</h2>
+        <ul>
+          <li><b>Familiarity beats novelty in high-stakes workflows.</b><span>When users are processing complex, high-value transactions, reducing cognitive load matters more than visual innovation.</span></li>
+          <li><b>Fixing invisible bottlenecks creates disproportionate leverage.</b><span>The configuration problem was not glamorous. It was the thing preventing us from scaling.</span></li>
+          <li><b>The best feature is sometimes the one you do not build.</b><span>Pushing back on the dashboard required confidence in my reading of how people actually work.</span></li>
+          <li><b>Holding design and delivery together protects quality at speed.</b><span>Being both design lead and product owner meant I could defend UX while staying close to engineering trade-offs.</span></li>
+        </ul>
+      </section>
+    </div>
+    </div>
+</main>
+
+<nav class="cs-next" aria-label="More work">
+  <a href="dashboards.html" class="reveal"><span>Previous</span><b>Unified Dashboards</b></a>
+  <a href="insyt.html" class="reveal" style="--d:1"><span>Next</span><b>Insyt</b></a>
+</nav>
+
+<footer>
+  <div class="foot-top">
+    <svg class="emblem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true">
+      <path d="M8.6 2.2H15.4L21.8 8.6V15.4L15.4 21.8H8.6L2.2 15.4V8.6Z"/>
+    </svg>
+    <p class="wordset"><span class="w" style="--i:0">Good</span> <span class="w" style="--i:1">products</span> <span class="w" style="--i:2">come</span><br><span class="w" style="--i:3">from</span> <span class="w" style="--i:4">good</span> <span class="w" style="--i:5">questions</span></p>
+  </div>
+
+  <div class="foot-mid">
+    <div class="rule-dots" aria-hidden="true"></div>
+    <p class="reveal">In London, and open to product and design work in domains that look too complicated from the outside. Email is quickest.</p>
+    <a class="btn light reveal" style="--d:1" href="mailto:luka.dadiani@me.com"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.25" y="3.25" width="13.5" height="11.5" rx="2"/><path d="m2.75 5.5 6.25 4 6.25-4"/></svg>luka.dadiani@me.com</a>
+  </div>
+
+  <div class="wordmark" aria-hidden="true">Luka Dadiani</div>
+
+  <div class="foot-links">
+    <a href="https://www.linkedin.com/in/lukadadiani/" target="_blank" rel="noopener">linkedin</a>
+    <a href="../index.html">home</a>
+    <!-- absolute: the retired portfolio is a sibling of the domain root, not
+         of whichever page is linking to it -->
+    <a href="/os/">os</a>
+    <a href="mailto:luka.dadiani@me.com">email</a>
+    <span>&copy; luka dadiani · 2026</span>
+  </div>
+</footer>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Four legacy systems, one placement platform",
+      "description": "Aviation, Renewables, Cargo and Fine Art each had their own application, their own dev team and their own way of capturing risk. I consolidated them, and…",
+      "url": "https://meetluka.com/work/xtrade.html",
+      "inLanguage": "en-GB",
+      "image": "https://meetluka.com/assets/og.jpg",
+      "author": { "@type": "Person", "name": "Luka Dadiani", "url": "https://meetluka.com/" },
+      "publisher": { "@type": "Person", "name": "Luka Dadiani", "url": "https://meetluka.com/" },
+      "about": "xTrade",
+      "isPartOf": { "@type": "WebSite", "url": "https://meetluka.com/", "name": "Luka Dadiani" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Luka Dadiani", "item": "https://meetluka.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Selected work", "item": "https://meetluka.com/#work" },
+        { "@type": "ListItem", "position": 3, "name": "xTrade", "item": "https://meetluka.com/work/xtrade.html" }
+      ]
+    }
+  ]
+}
+</script>
+</body>
+</html>

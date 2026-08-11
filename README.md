@@ -1,5 +1,11 @@
 # LukaOS
 
+> **This repository now serves two sites.** `meetluka.com/` is the current
+> portfolio, a dependency-free static site in [`site/`](site/). This OS-style
+> portfolio has been retired to `meetluka.com/os/` — it still builds and
+> deploys from here, but it is `noindex` and is no longer the front door.
+> See [`site/README.md`](site/README.md) for how the two are assembled.
+
 [![Live Site](https://img.shields.io/badge/live-meetluka.com-red?style=flat-square)](https://meetluka.com)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)

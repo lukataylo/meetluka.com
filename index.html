@@ -8,12 +8,19 @@
     <meta name="keywords" content="Product Manager, Product Designer, UX Design, London, Portfolio, Nothing OS" />
     <meta name="author" content="Luka Dadiani" />
 
+    <!-- Retired to /os/. The live portfolio is at the domain root, and keeping
+         this indexable would put two of my own sites in competition for my own
+         name. Crawlable but not indexed, so the noindex is actually seen — a
+         robots.txt Disallow would hide the page and leave stale results up. -->
+    <meta name="robots" content="noindex, follow" />
+    <link rel="canonical" href="https://meetluka.com/os/" />
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://meetluka.com/" />
+    <meta property="og:url" content="https://meetluka.com/os/" />
     <meta property="og:title" content="Luka Dadiani | Product Manager & Senior Designer" />
     <meta property="og:description" content="Interactive OS-style portfolio featuring case studies, notes on product and design, and an AI terminal." />
     <meta property="og:image" content="/favicon.svg" />

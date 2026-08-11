@@ -14,7 +14,8 @@ export const desktopIcon = (page: Page, title: string) =>
  * start from a deterministic "About is open" state unless a hash is given.
  */
 export async function loadDesktop(page: Page, hash = '') {
-  await page.goto(`/${hash}`);
+  // relative, so it resolves under the `/os/` base rather than the domain root
+  await page.goto(`./${hash}`);
   await expect(page.getByRole('main', { name: 'Desktop workspace' })).toBeVisible();
   if (!hash) {
     await expect(windowByTitle(page, 'About_Me.pdf')).toBeVisible();

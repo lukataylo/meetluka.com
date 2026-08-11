@@ -30,7 +30,21 @@ jobs:
       - run: npm test
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
-      - run: npm run build
+
+      # The retired OS-style portfolio builds into dist/os (see `base` in
+      # vite.config.ts); the static site in `site/` then owns the artifact root.
+      # Order matters: Vite empties its own outDir, so it has to go first.
+      - name: Build the retired portfolio into /os
+        run: npm run build
+
+      - name: Build and stage the main site at the root
+        run: |
+          node site/build/build.mjs
+          cp -R site/. dist/
+          rm -rf dist/build dist/README.md
+          test -f dist/CNAME
+          test -f dist/index.html
+          test -f dist/os/index.html
 
       - uses: actions/configure-pages@v4
 

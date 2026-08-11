@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Insyt case study — Redemption at national scale | Luka Dadiani</title>
+<meta name="description" content="“Buy a Chromebook, get a Google Home free” is a serious marketing investment. The infrastructure behind it was usually an afterthought — an agency one-off,…">
+<meta name="theme-color" content="#e9e9ec">
+<link rel="canonical" href="https://meetluka.com/work/insyt.html">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Luka Dadiani">
+<meta property="og:url" content="https://meetluka.com/work/insyt.html">
+<meta property="og:title" content="Insyt case study — Redemption at national scale | Luka Dadiani">
+<meta property="og:description" content="“Buy a Chromebook, get a Google Home free” is a serious marketing investment. The infrastructure behind it was usually an afterthought — an agency one-off,…">
+<meta property="og:image" content="https://meetluka.com/assets/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Insyt case study — Redemption at national scale | Luka Dadiani">
+<meta name="twitter:description" content="“Buy a Chromebook, get a Google Home free” is a serious marketing investment. The infrastructure behind it was usually an afterthought — an agency one-off,…">
+<meta name="twitter:image" content="https://meetluka.com/assets/og.jpg">
+
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<style>/* ============================================================
+   Luka Dadiani — tokens
+   ============================================================ */
+:root{
+  --ease:cubic-bezier(.22,1,.36,1);
+  --canvas:#e9e9ec;
+  --paper:#f4f5f7;
+  --ink:#131315;
+  --ink-11:rgba(19,19,21,.68);
+  --ink-10:rgba(19,19,21,.52);
+  --faint:rgba(19,19,21,.30);
+  --rule:rgba(10,11,13,.09);
+  --night:#0b0b0c;
+
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,Cambria,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Geist Mono",Menlo,Consolas,monospace;
+}
+
+/* The ambient loops — the drifting ribbon, the turning polygon field, the
+   travelling beams — each force their heavily blurred layers to re-rasterise
+   on every frame. That is invisible when the page is still and ruinous when
+   it is scrolling (30fps → 60fps just by holding them). They resume as soon
+   as scrolling stops, which is the only time anyone watches them. */
+[data-still] .spin,
+[data-still] .ribbon i,
+[data-still] .beam{animation-play-state:paused}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  margin:0;background:#fff;color:var(--ink);overflow-x:clip;
+  font:400 15px/1.65 var(--sans);
+  font-feature-settings:"kern","ss01";-webkit-font-smoothing:antialiased;
+}
+a{color:inherit}
+h1,h2,h3,p,ul{margin:0}
+ul{padding:0;list-style:none}
+
+/* ============================================================
+   prism ribbon — CSS stand-in for octolane's WebGL caustic
+   ============================================================ */
+/* A stack of very heavily blurred boxes. Nothing transforms this on scroll
+   any more — moving it re-ran the blur every frame — so it needs no layer. */
+.ribbon{
+  position:absolute;left:50%;top:60%;width:132vw;height:30vh;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 26%,#000 74%,transparent),
+                     linear-gradient(to right,transparent 2%,#000 26%,#000 74%,transparent 98%);
+          mask-image:linear-gradient(to bottom,transparent,#000 26%,#000 74%,transparent),
+                     linear-gradient(to right,transparent 2%,#000 26%,#000 74%,transparent 98%);
+  -webkit-mask-composite:source-in;mask-composite:intersect;
+}
+.ribbon i{position:absolute;left:0;right:0;display:block;border-radius:50%;will-change:transform,opacity}
+.ribbon i:nth-child(1){
+  background:linear-gradient(95deg,transparent 6%,#4a8cff 19%,#63d8ff 30%,#dff6ff 40%,
+    #ffffff 49%,#fff3d0 58%,#ffbb45 70%,#ff7a3d 82%,transparent 95%);
+  height:40%;top:30%;opacity:.55;filter:blur(38px) saturate(1.35);transform:rotate(-3.6deg);
+  animation:swell 19s var(--ease) infinite alternate;
+}
+.ribbon i:nth-child(2){
+  background:linear-gradient(94deg,transparent 14%,#2f7dff 27%,#7fe4ff 38%,#ffffff 50%,
+    #ffdb8a 62%,#ff9a2e 74%,transparent 88%);
+  height:15%;top:42%;opacity:.8;filter:blur(13px) saturate(1.5);transform:rotate(-3deg);
+  animation:swell2 24s var(--ease) infinite alternate;
+}
+.ribbon i:nth-child(3){
+  background:linear-gradient(92deg,transparent 26%,#ffffff 45%,#ffffff 57%,transparent 76%);
+  height:4%;top:47.5%;filter:blur(5px);transform:rotate(-3.2deg);
+  animation:swell3 15s var(--ease) infinite alternate;
+}
+@keyframes swell {to{transform:rotate(-2.2deg) scaleY(1.14) translateY(-1.4vh)}}
+@keyframes swell2{to{transform:rotate(-4.4deg) translate(2vw,.8vh) scaleY(1.3)}}
+@keyframes swell3{to{transform:rotate(-2.1deg) translateY(-.5vh) scaleX(1.06)}}
+
+/* ============================================================
+   shell — the hero canvas that becomes the letter card
+   ============================================================ */
+.emblem{width:52px;height:52px;color:var(--ink)}
+
+/* shared atoms — used above the fold by both page types */
+.badge{
+  display:grid;place-items:center;width:34px;height:34px;border-radius:10px;flex:0 0 auto;
+  background:var(--brand);color:#fff;
+}
+.badge svg{width:18px;height:18px}
+.meta{
+  margin-left:2px;font:400 10.5px var(--mono);text-transform:uppercase;letter-spacing:.1em;
+  color:var(--faint);align-self:center;padding-top:2px;
+}
+.w{display:inline-block}
+
+/* ------------------------------------------------------------
+   entrance — CSS, not GSAP. The headline is the LCP element, and
+   hanging it off a 46KB script meant the largest paint could not
+   happen until that script had downloaded, parsed and run. These
+   start at first paint and work with JS disabled entirely.
+   ------------------------------------------------------------ */
+@keyframes enter-up  {from{opacity:0;transform:translateY(14px)}}
+@keyframes enter-word{from{opacity:0;transform:translateY(55%)}}
+@keyframes enter-mark{from{opacity:0;transform:translateY(-14px) scale(.86)}}
+@keyframes enter-fade{from{opacity:0}}
+@keyframes type      {from{clip-path:inset(0 100% 0 0)}}
+
+.reveal{
+  opacity:0;transform:translateY(26px);
+  transition:opacity .85s var(--ease),transform .85s var(--ease);
+  transition-delay:calc(var(--d,0) * 90ms);
+}
+.reveal.in{opacity:1;transform:none}
+
+/* same mechanism, per word — the footer heading is static text, so it is
+   pre-split in the markup and needs no splitter at runtime */
+.wordset .w{
+  opacity:0;transform:translateY(70%);
+  transition:opacity .9s var(--ease),transform .9s var(--ease);
+  transition-delay:calc(var(--i) * 60ms);
+}
+.wordset.in .w{opacity:1;transform:none}
+
+.btn{
+  display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;
+  border-radius:999px;font:500 15px var(--sans);text-decoration:none;
+  transition:box-shadow .25s var(--ease),transform .25s var(--ease),background-color .25s var(--ease);
+}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:scale(.98)}
+.btn.dark{background:#18181a;color:#fafafa}
+.btn.dark:hover{background:#0b0b0c}
+.btn.light{background:rgba(255,255,255,.88);color:var(--ink);backdrop-filter:blur(10px)}
+.btn.light:hover{box-shadow:0 0 0 .5px rgba(0,0,0,.2),0 2px 4px -2px rgba(0,0,0,.12),
+                            0 6px 20px -8px rgba(0,0,0,.16)}
+.btn svg{width:17px;height:17px;flex:0 0 auto}
+
+/* ============================================================
+   island nav
+   ============================================================ */
+.island{
+  position:fixed;left:50%;top:28px;z-index:245;
+  transform:translateX(-50%) translateY(-140%);opacity:0;
+  transition:transform .5s var(--ease),opacity .45s var(--ease);
+}
+.island.on{transform:translateX(-50%);opacity:1}
+.island div{
+  display:flex;align-items:center;height:42px;padding:0 5px 0 14px;border-radius:999px;
+  background:rgba(16,16,18,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  box-shadow:0 8px 30px -10px rgba(0,0,0,.5);
+}
+.island .name{display:flex;align-items:center;gap:9px;margin-right:12px;
+  color:#fff;text-decoration:none;font-size:17px;font-weight:300;letter-spacing:-.01em}
+.island .name svg{width:18px;height:18px}
+.island a.lnk{
+  display:flex;align-items:center;height:32px;padding:0 10px;border-radius:8px;
+  color:rgba(255,255,255,.72);text-decoration:none;font-size:14.5px;
+  transition:color .15s var(--ease)}
+.island a.lnk:hover{color:#fff}
+.island a.cta{
+  margin-left:8px;height:32px;padding:0 12px;border-radius:999px;display:flex;align-items:center;
+  background:#fff;color:var(--ink);text-decoration:none;font-size:14.5px;font-weight:500}
+.island .name,.island a.lnk,.island a.cta{white-space:nowrap;flex:0 0 auto}
+@media (max-width:640px){
+  .island a.lnk{display:none}
+  .island div{height:40px;padding:0 4px 0 12px}
+  .island .name{font-size:15px;margin-right:10px}
+  .island .name svg{width:16px;height:16px}
+  .island a.cta{height:30px;padding:0 11px;font-size:13.5px}
+}
+
+.progress{position:fixed;left:0;top:0;right:0;height:2px;z-index:300;pointer-events:none}
+.progress i{display:block;height:100%;transform:scaleX(0);transform-origin:left center;
+  background:linear-gradient(90deg,#2f7dff,#7fe4ff 38%,#ffdb8a 66%,#ff9a2e)}
+
+.is-case .island{opacity:1;transform:translateX(-50%)}
+
+.cs-hero{
+  position:relative;overflow:hidden;padding:150px 24px 92px;
+  background:radial-gradient(120% 90% at 50% 0%,#f2f2f4 0%,var(--canvas) 58%,#dedee2 100%);
+}
+.cs-hero .ribbon{top:74%;height:34vh;opacity:.8;z-index:0}
+.cs-hero-in{position:relative;z-index:2;max-width:820px;margin:0 auto}
+
+.cs-back{
+  display:inline-flex;align-items:center;gap:7px;text-decoration:none;
+  font:400 11.5px var(--mono);text-transform:uppercase;letter-spacing:.12em;
+  color:var(--ink-10);transition:color .2s var(--ease);
+}
+.cs-back:hover{color:var(--ink)}
+.cs-back b{font-weight:400;font-size:15px;line-height:1;transition:transform .25s var(--ease)}
+.cs-back:hover b{transform:translateX(-3px)}
+
+.cs-id{display:flex;align-items:center;gap:12px;margin-top:36px}
+.cs-name{font-size:22px;letter-spacing:-.015em}
+
+.cs-hero h1{
+  margin:22px 0 0;font-family:var(--serif);font-weight:400;
+  font-size:clamp(38px,6vw,68px);line-height:1.06;letter-spacing:-.02em;
+}
+/* entrance, in CSS for the same reason as the home hero — this h1 is the
+   LCP element on every case page */
+.cs-back{animation:enter-fade .5s var(--ease) backwards}
+.cs-id{animation:enter-up .5s var(--ease) .1s backwards}
+.cs-hero h1 .w{animation:enter-word .68s var(--ease) backwards;
+  animation-delay:calc(.18s + var(--i) * .04s)}
+.cs-tagline{animation:enter-up .6s var(--ease) .46s backwards}
+.cs-meta>div{animation:enter-up .55s var(--ease) backwards}
+.cs-meta>div:nth-child(1){animation-delay:.58s}
+.cs-meta>div:nth-child(2){animation-delay:.64s}
+.cs-meta>div:nth-child(3){animation-delay:.70s}
+.cs-meta>div:nth-child(4){animation-delay:.76s}
+.cs-tagline{margin:26px 0 0;max-width:56ch;font-size:18px;line-height:1.65;color:var(--ink-11)}
+
+.cs-meta{
+  display:grid;gap:20px 40px;margin:46px 0 0;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  padding-top:26px;border-top:1px solid var(--rule);
+}
+.cs-meta dt{font:400 10.5px var(--mono);text-transform:uppercase;letter-spacing:.12em;color:var(--faint)}
+.cs-meta dd{margin:7px 0 0;font-size:15px;line-height:1.5;color:var(--ink)}
+
+/* --- body --- */
+.cs{max-width:820px;margin:0 auto;padding:0 24px}
+.cs-block{padding:56px 0 0}
+.cs-block h2{
+  margin:0;font-family:var(--serif);font-weight:400;
+  font-size:clamp(26px,3.2vw,34px);line-height:1.2;letter-spacing:-.018em;
+}
+/* the column is wide enough for the headings; the prose is held to a
+   comfortable measure inside it */
+.cs-block p{margin:20px 0 0;max-width:64ch;font-size:17px;line-height:1.75;
+  color:var(--ink-11);text-wrap:pretty}
+.cs-block p+p{margin-top:14px}
+.cs-num{
+  display:block;margin-bottom:14px;
+  font:400 11px var(--mono);letter-spacing:.16em;color:var(--faint);
+}
+
+/* --- NDA gate --- */
+.cs-gate{
+  max-width:520px;margin:72px auto 0;padding:38px 34px 34px;text-align:center;
+  border-radius:22px;background:var(--paper);
+}
+.cs-gate-icon{display:grid;place-items:center;width:42px;height:42px;margin:0 auto;
+  border-radius:50%;background:#fff;box-shadow:0 0 0 .5px var(--rule)}
+.cs-gate-icon svg{width:19px;height:19px}
+.cs-gate h2{margin:20px 0 0;font-family:var(--serif);font-weight:400;font-size:26px;letter-spacing:-.015em}
+.cs-gate p{margin:12px 0 0;font-size:15px;line-height:1.6;color:var(--ink-11)}
+.cs-gate a{color:var(--ink)}
+.cs-gate-row{display:flex;gap:8px;margin-top:22px}
+.cs-gate input{
+  flex:1;height:42px;padding:0 15px;border:none;border-radius:999px;
+  background:#fff;box-shadow:0 0 0 .5px var(--rule);
+  font:400 15px var(--sans);color:var(--ink);
+}
+.cs-gate input:focus{outline:2px solid #2f7dff;outline-offset:1px}
+.cs-gate button{
+  height:42px;padding:0 20px;border:none;border-radius:999px;cursor:pointer;
+  background:#18181a;color:#fafafa;font:500 15px var(--sans);
+  transition:background-color .2s var(--ease);
+}
+.cs-gate button:hover{background:#0b0b0c}
+.cs-gate-err{color:#b4292f}
+
+@media (max-width:700px){.cs-hero{padding:118px 22px 68px}}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .ribbon i,.spin,.beam{animation:none}
+  /* `both`-filled entrance animations revert to the settled state when the
+     animation is removed, so this is all that is needed to skip them */
+  .note-line,.hero-layer h1 .w,[data-hero],
+  [data-hero] .btn,[data-hero] .lede,
+  .cs-hero h1 .w{animation:none;clip-path:none}
+  .reveal,.wordset .w{opacity:1;transform:none;transition:none}
+  /* the canvas stops being a stage and becomes two ordinary blocks */
+  .shell-sticky{position:static;height:auto}
+  .canvas{position:relative;inset:auto;overflow:visible;padding-bottom:80px}
+  .hero-layer{position:relative;left:auto;transform:none;width:auto}
+  .letter-view{position:relative;inset:auto;overflow:visible;opacity:1;
+    -webkit-mask-image:none;mask-image:none}
+  .letter-flow{position:static;transform:none;margin:0 auto;left:auto}
+  .letter-flow .w{opacity:1;filter:none}
+  .letter-prism{display:none}
+  .island{opacity:1;transform:translateX(-50%)}
+}</style>
+<link rel="preload" as="style" href="../assets/rest.css" onload="this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="../assets/rest.css"></noscript>
+<script defer src="../assets/case.js"></script>
+</head>
+<body class="is-case">
+
+<div class="progress" aria-hidden="true"><i data-progress></i></div>
+
+<nav class="island" aria-label="Site">
+  <div>
+    <a class="name" href="../index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M8.6 2.2H15.4L21.8 8.6V15.4L15.4 21.8H8.6L2.2 15.4V8.6Z"/></svg>Luka Dadiani</a>
+    <a class="lnk" href="../index.html#letter">About</a>
+    <a class="lnk" href="../index.html#work">Work</a>
+    <a class="cta" href="mailto:luka.dadiani@me.com">Get in touch</a>
+  </div>
+</nav>
+
+<header class="cs-hero">
+  <div class="ribbon" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="cs-hero-in">
+    <a class="cs-back" href="../index.html#work"><b>&lsaquo;</b> Selected work</a>
+
+    <div class="cs-id">
+      <span class="badge" style="--brand:#f76b15">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2 9 3l6.5 3.2v5.6L9 15l-6.5-3.2z"/><path d="M2.5 6.2 9 9.4l6.5-3.2M9 9.4V15"/></svg>
+      </span>
+      <span class="cs-name">Insyt</span>
+      <span class="meta">2 yrs</span>
+    </div>
+
+    <h1><span class="w" style="--i:0">Redemption</span> <span class="w" style="--i:1">at</span><br><span class="w" style="--i:2">national</span> <span class="w" style="--i:3">scale</span></h1>
+    <p class="cs-tagline">“Buy a Chromebook, get a Google Home free” is a serious marketing investment. The infrastructure behind it was usually an afterthought — an agency one-off, fragile under load and disconnected from fulfilment. We built the platform instead.</p>
+
+    <dl class="cs-meta">
+      <div><dt>Role</dt><dd>Lead Product Designer</dd></div>
+      <div><dt>Team</dt><dd>2 designers, one hired by me</dd></div>
+      <div><dt>Clients</dt><dd>Google, LG, Philips, Samsung</dd></div>
+      <div><dt>When</dt><dd>2 years</dd></div>
+    </dl>
+  </div>
+</header>
+
+<main class="cs">
+    <div class="cs-body">
+      
+      <section class="cs-block reveal">
+        
+        <h2>The strategic problem</h2>
+        <p>Landing pages for promotional campaigns were built as one-offs: inconsistent quality, poor accessibility, fragile under the traffic a TV spot produces, and completely disconnected from fulfilment. Support teams drowned in “where is my item?”.</p>
+        <p>The opportunity was a single platform that could deliver a best-in-class redemption experience across brands, survive traffic spikes from TV and print, integrate properly with logistics partners, cut operational overhead, and be reused for the next client.</p>
+      </section>
+
+      <section class="cs-block reveal">
+        
+        <h2>My role</h2>
+        <p>I led product design for two years across UX, service design and client-facing work. I owned the experience end to end — from the form through fulfilment and support — and managed two designers across the component system and the campaign UIs.</p>
+        <p>I also led service design across logistics partners, drove the copy and accessibility standards, and presented in sales pitches to Google, LG and Philips, demoing the platform and explaining how we tested it.</p>
+      </section>
+
+      <section class="cs-block reveal">
+        <span class="cs-num">01</span>
+        <h2>The sixty-package audit</h2>
+        <p>Redemption does not end with a thank-you screen. The part customers remember is receiving — or not receiving — the item. Most teams treat logistics as somebody else’s problem. I insisted we make it ours.</p>
+        <p>I ordered just under sixty packages to destinations across the UK: cities, suburbs, rural addresses, using different delivery partners. I documented delivery times, package condition, notification accuracy and every failure mode.</p>
+        <p>The findings were decisive. One partner performed significantly worse outside urban areas. We chose DPD on the evidence. Unglamorous work that shaped the entire downstream experience.</p>
+      </section>
+
+      <section class="cs-block reveal">
+        <span class="cs-num">02</span>
+        <h2>Conversational data capture</h2>
+        <p>Our users were not always tech-savvy. Many arrived from TV and newspaper ads — an older demographic, usually on a phone, redeeming a promotion for the first time. A traditional long form would have killed conversion.</p>
+        <p>So the flow asked one question at a time: large mobile-friendly inputs, a conversational tone, clear progress, and a summary screen before submission. Abandonment dropped sharply, particularly on mobile, and the pattern became the reusable template for every campaign after it.</p>
+      </section>
+
+      <section class="cs-block reveal">
+        <span class="cs-num">03</span>
+        <h2>Pushing back on Google</h2>
+        <p>Google’s team wanted Material Design inputs throughout their campaigns. Their components, their styling.</p>
+        <p>I pushed back. Ours had been tested across demographics and devices, met WCAG, and were optimised for the specific context of promotional redemption. I walked their team through the testing methodology, showed the rationale behind each component decision, and demonstrated how we could hold brand consistency without giving up usability. They accepted the approach.</p>
+        <p>It was never about winning the argument. It was about the person at the other end of the campaign.</p>
+      </section>
+
+      <section class="cs-block reveal">
+        <span class="cs-num">04</span>
+        <h2>Copy standards and accessibility</h2>
+        <p>As campaigns multiplied, inconsistency crept in — different writers, different tones, different levels of clarity around promotional terms. That is a confused user and a compliance risk at the same time.</p>
+        <p>I pushed for a copy style guide, and for a part-time copywriter to own the words across campaigns. I made the business case on iteration cycles: we were burning days on stakeholder feedback rounds a dedicated writer would prevent. Cycles roughly halved, saving about a week per campaign.</p>
+        <p>On accessibility, every form component was held to WCAG and tested across assistive technologies.</p>
+      </section>
+
+      <section class="cs-block reveal">
+        
+        <h2>One component library, four brands</h2>
+        <p>To serve Google, LG, Philips and Samsung from one platform we built a library that supported co-branding and theming per client, shared interaction patterns across campaigns, and rapid setup for a new promotion without rebuilding it.</p>
+        <p>That is what turned Insyt from a project into a product.</p>
+      </section>
+
+      <section class="cs-block cs-outcomes reveal">
+        <h2>Outcomes</h2>
+        <dl>
+          <div><dt>Millions</dt><dd>of users reached across the UK and Europe</dd></div>
+          <div><dt>4–5k</dt><dd>daily users at peak during TV and print campaigns</dd></div>
+          <div><dt>Mid-60s</dt><dd>client NPS, well above typical promotional experiences</dd></div>
+          <div><dt>3</dt><dd>major clients pitched and won during my tenure</dd></div>
+          <div><dt>~1 week</dt><dd>of iteration time saved per campaign</dd></div>
+        </dl>
+      </section>
+
+      <section class="cs-block cs-learned reveal">
+        <h2>What I learned</h2>
+        <ul>
+          <li><b>The real experience extends far beyond the UI.</b><span>Redemption spans web, logistics, email, SMS and support. Designing only the form would have solved 30% of the problem.</span></li>
+          <li><b>Defending UX decisions is part of the job.</b><span>Presenting testing rationale and standing behind your methodology, while staying collaborative, is the work at this level.</span></li>
+          <li><b>Investing in content quality pays back fast.</b><span>The copywriter recommendation felt like a small intervention. It turned out to be the high-leverage one.</span></li>
+          <li><b>Client-facing work sharpens your craft.</b><span>Pitching forces you to articulate why an approach works, not just what you built.</span></li>
+        </ul>
+      </section>
+    </div>
+</main>
+
+<nav class="cs-next" aria-label="More work">
+  <a href="xtrade.html" class="reveal"><span>Previous</span><b>xTrade</b></a>
+  <a href="driving-data.html" class="reveal" style="--d:1"><span>Next</span><b>Driving Data</b></a>
+</nav>
+
+<footer>
+  <div class="foot-top">
+    <svg class="emblem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true">
+      <path d="M8.6 2.2H15.4L21.8 8.6V15.4L15.4 21.8H8.6L2.2 15.4V8.6Z"/>
+    </svg>
+    <p class="wordset"><span class="w" style="--i:0">Good</span> <span class="w" style="--i:1">products</span> <span class="w" style="--i:2">come</span><br><span class="w" style="--i:3">from</span> <span class="w" style="--i:4">good</span> <span class="w" style="--i:5">questions</span></p>
+  </div>
+
+  <div class="foot-mid">
+    <div class="rule-dots" aria-hidden="true"></div>
+    <p class="reveal">In London, and open to product and design work in domains that look too complicated from the outside. Email is quickest.</p>
+    <a class="btn light reveal" style="--d:1" href="mailto:luka.dadiani@me.com"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.25" y="3.25" width="13.5" height="11.5" rx="2"/><path d="m2.75 5.5 6.25 4 6.25-4"/></svg>luka.dadiani@me.com</a>
+  </div>
+
+  <div class="wordmark" aria-hidden="true">Luka Dadiani</div>
+
+  <div class="foot-links">
+    <a href="https://www.linkedin.com/in/lukadadiani/" target="_blank" rel="noopener">linkedin</a>
+    <a href="../index.html">home</a>
+    <!-- absolute: the retired portfolio is a sibling of the domain root, not
+         of whichever page is linking to it -->
+    <a href="/os/">os</a>
+    <a href="mailto:luka.dadiani@me.com">email</a>
+    <span>&copy; luka dadiani · 2026</span>
+  </div>
+</footer>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Redemption at national scale",
+      "description": "“Buy a Chromebook, get a Google Home free” is a serious marketing investment. The infrastructure behind it was usually an afterthought — an agency one-off,…",
+      "url": "https://meetluka.com/work/insyt.html",
+      "inLanguage": "en-GB",
+      "image": "https://meetluka.com/assets/og.jpg",
+      "author": { "@type": "Person", "name": "Luka Dadiani", "url": "https://meetluka.com/" },
+      "publisher": { "@type": "Person", "name": "Luka Dadiani", "url": "https://meetluka.com/" },
+      "about": "Insyt",
+      "isPartOf": { "@type": "WebSite", "url": "https://meetluka.com/", "name": "Luka Dadiani" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Luka Dadiani", "item": "https://meetluka.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Selected work", "item": "https://meetluka.com/#work" },
+        { "@type": "ListItem", "position": 3, "name": "Insyt", "item": "https://meetluka.com/work/insyt.html" }
+      ]
+    }
+  ]
+}
+</script>
+</body>
+</html>

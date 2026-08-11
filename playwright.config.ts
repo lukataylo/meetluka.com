@@ -17,7 +17,7 @@ export default defineConfig({
   reporter: process.env.CI ? 'github' : 'list',
   timeout: 30_000,
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:3000/os/',
     trace: 'on-first-retry',
     contextOptions: { reducedMotion: 'reduce' },
   },
