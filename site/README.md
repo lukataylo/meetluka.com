@@ -48,6 +48,12 @@ Opening `index.html` directly from the filesystem also works.
 | `assets/rest.css` | **Generated** below-the-fold CSS. Do not edit |
 | `assets/app.js` | Landing-page scroll motion (3KB gzipped) |
 | `assets/case.js` | Case-page scroll motion, plus the NDA gate (1.3KB gzipped) |
+| `assets/hiw.css` `assets/hiw.js` | The "show how I work" desktop shell. Fetched on hover at the earliest, never on load |
+| `assets/hiw-app-*.js` | Desktop apps, one plugin per file |
+| `assets/hiw-*.js` | **Generated** desktop content, one file per case study |
+| `build/how-i-work.mjs` | The desktop copy. Edit here |
+| `assets/wallpaper.jpg` | Desktop wallpaper (Unsplash License) |
+| `assets/shots/` | Product screenshots the Figma canvas shows. Derivatives — the full-resolution masters stay in the private repo |
 
 No frameworks and no animation library, and nothing blocks the first paint.
 The landing page renders from a single 7.8KB response; a case study from 5.5KB.
@@ -82,8 +88,8 @@ second request in the way:
 
 | | first-paint bytes, gzipped |
 | --- | --- |
-| `index.html` | 7.8KB — 54% of the window |
-| a case study | 5.5KB — 38% |
+| `index.html` | 11.5KB — 79% of the window |
+| a case study | 6.1KB — 42% |
 
 Two things make that work. **The CSS is inlined**, so there is no
 render-blocking request; and **byte order is deliberate** — the head and the
@@ -171,6 +177,141 @@ headline's last word finishes animating, so the delays in the `entrance` block
 of `style.css` are the largest-contentful-paint budget. They currently land it
 at ~1.0s. Lengthening them pushes LCP out one-for-one.
 
+## Show how I work
+
+The xTrade case study carries a button in its hero that opens a mock macOS
+desktop over the page. It is a working day, not a screenshot:
+
+| | |
+| --- | --- |
+| **Figma** | The case study's own artboards — real screenshots of the live site. Pan, ⌘-scroll zoom, click a frame or a layer row to select it |
+| **Google Chrome** | Tabs in the title bar, where Chrome puts them. Azure DevOps: the Sprint 41 board with capacity and blockers, and work item 48244 open on the thread where the call gets made |
+| **Outlook** | Command bar, Focused/Other pivot, four customer and stakeholder threads, each with the reply that was sent. Delete, Archive, Move, Flag and Reply all work |
+| **Microsoft Teams** | Every channel and chat is live: developer questions answered, user tests requested, and the 1:1 that runs a Belgrade contractor team. Plus Activity, a week Calendar and Files |
+| **Notes** | The broker session the argument came out of, and a decision log |
+| **Terminal** | A Claude Code session that replays itself |
+| **Finder · Trash · System Settings · About This Mac** | In the dock, not on the desktop. Toy apps, and the only place the thing is allowed to be funny |
+
+The menu bar works — Apple menu, per-app menus, Wi-Fi, battery, Spotlight,
+Control Centre and the clock all open. Notifications arrive while you are in
+there, and clicking one takes you to what it is about.
+
+The case study says what shipped. This shows the working: a prioritisation call
+made in a ticket thread, a handoff defect owned rather than defended, a
+contractor's public holiday changing the sprint commitment. That is the part a
+write-up cannot carry.
+
+Every word of it is fiction written for this purpose. The hint line says so;
+keep it there.
+
+### It is behind the NDA gate
+
+xTrade is gated, so its desktop is too. The desktop opens on a macOS lock screen
+on the same passphrase and the same `sessionStorage` key as the page's own gate,
+so unlocking either unlocks both. Like that gate it is obscurity, not security —
+the content is in the payload either way.
+
+**The passphrase is still the placeholder.** `node build/build.mjs` warns about
+it on every run. Change `locked` in `build/content.mjs` before this goes live.
+
+### It costs nothing until it is asked for
+
+The desktop is ~78KB gzipped of code and content plus ~610KB of images. That is
+far more than the case study it sits on, so **none of it is fetched until
+someone presses the button**:
+
+| | |
+| --- | --- |
+| in the page | the button, and its rules in the `case` bucket |
+| on hover or focus | `hiw.css` and `hiw-xtrade.js` start downloading |
+| on click | `hiw.js` runs, then the app plugins, then the desktop opens |
+| once open | the wallpaper fades in on decode; artboards are `loading="lazy"` |
+
+First paint is unchanged at 41% of the budget. A plugin that fails to load costs
+its app, not the desktop.
+
+### Apps are plugins
+
+`hiw.js` is the shell — window manager, dock, menu bar, notifications. Apps
+register themselves:
+
+```js
+HowIWork.register('settings', {
+  name: 'System Settings', short: 'Settings',
+  menus: ['File', 'Edit', 'View', 'Window', 'Help'],
+  bg: '…', glyph: '<svg …>',        // its dock icon
+  render(data, win, ui) { return ui.el('div.hiw-body', …); },
+});
+```
+
+`ui` is a deliberately small kit: `el()`, `svg()`, `inline()`, `clamp()`,
+`ICONS`, and `ui.style(id, css)` which injects a stylesheet once — so a plugin
+is one self-contained file. `win` carries `setTitle`, `onFirstShow`, `onResize`,
+`onClose` and a `timers` array that the shell clears on close. A registration
+overrides a built-in of the same id, which is how Outlook was replaced without
+touching the shell.
+
+Add a plugin to `PLUGINS` in `case.js` and an entry to `apps` in
+`build/how-i-work.mjs`. `boot: false` puts an app in the dock without opening it.
+
+One sharp edge: `ui.el()` flattens arrays and skips nullish children, but native
+`replaceChildren` does neither. Route repaints through `el()` rather than
+passing it a `.map()` result directly.
+
+### The performance rules still apply
+
+The desktop covers the page, but a covered animation is not a stopped one — the
+ribbon and the polygon field are blur stacks that re-rasterise every frame
+whether or not anyone can see them. Opening the desktop sets `data-hiw` on the
+root, which parks them through the same rule scrolling uses.
+
+Inside the desktop:
+
+- **Chrome is translucent, content is opaque.** Menu bar, dock, title bars and
+  sidebars are `backdrop-filter`; window bodies are not. Both what macOS does
+  and the only affordable version of it.
+- **The glass comes off during a drag.** Moving a window is the one moment when
+  something moves behind every blurred surface at once, so `--glass` switches to
+  `none` for the length of the gesture.
+- **Drag, resize and canvas pan write geometry straight to the element.** One
+  style write per pointer event, no state to reconcile.
+- **Dock magnification is a transform per icon**, off one rAF-throttled
+  `pointermove`.
+- **Windows are not promoted at rest.** `will-change` is added for the open,
+  minimise and drag transitions and removed after, per rule 5 above.
+- **Panes collapse rather than crush.** Each window body is a CSS container; a
+  narrow window drops its sidebar instead of squeezing the note to one word a
+  line.
+- **The button reset is `:where()`-wrapped.** `.hiw button` at (0,1,1) beat every
+  single-class rule and silently flattened every list row built as a button.
+  Zero-specificity resets, or components cannot style themselves.
+
+### The screenshots on the Figma canvas
+
+`assets/shots/*.jpg` are captured from the running site with Playwright, which
+is installed outside the repo — the project still has zero dependencies. Serve
+the site, drive it at `deviceScaleFactor: 2` with `reducedMotion: 'reduce'`,
+screenshot each `.cs-block`, then `sips -Z 720`. Frame dimensions in
+`build/how-i-work.mjs` carry each image's aspect ratio, so the canvas reserves
+the right box before an image arrives.
+
+### Adding a second desktop
+
+Add an entry to `DESKTOPS` in `build/how-i-work.mjs` keyed by the case-study
+slug and re-run the build. `apps` says which windows exist, their menu-bar
+titles and where each opens as a fraction of the desktop; the rest is one key
+per app. Inside document and note text, `[[wrapped text]]` renders as a
+highlight and as bold respectively. `chromeTabs: true` lets an app claim the
+window's title bar for its own tab strip.
+
+### Known gaps
+
+- No focus trap. Escape, the dock's Back item and the traffic lights all close
+  it and focus returns to the button, but Tab can still reach the page behind.
+- Artboards are positioned in absolute pixels, generated from the real image
+  dimensions. Recapturing means re-running the layout script.
+- The content is fictional, including every name in it.
+
 ## SEO
 
 Every page carries a canonical URL, a unique title and description, Open Graph
@@ -204,8 +345,8 @@ prompt — the same client-side gate the existing site uses. It keeps the page
 from being read at a glance; it is not a security control, and the text is still
 in the HTML source. If that matters, cut the sections down instead of gating them.
 
-Preview tiles are drawn in CSS (`.mock-*`) so the site ships with no image
-assets; each case declares its two tiles in the `shots` field of
+Preview tiles are drawn in CSS (`.mock-*`), so the case-study cards need no
+image assets; each case declares its two tiles in the `shots` field of
 `build/content.mjs`. Swap a `<figure class="shot">` for a real screenshot when
 you have one — keep the top-anchored `figcaption`, since the card deliberately
-clips the tile.s bottom edge.
+clips the tile's bottom edge.

@@ -57,7 +57,12 @@ if (location.hash.startsWith('#/')) location.replace('/os/' + location.hash);
    as scrolling stops, which is the only time anyone watches them. */
 [data-still] .spin,
 [data-still] .ribbon i,
-[data-still] .beam{animation-play-state:paused}
+[data-still] .beam,
+/* the "how I work" desktop covers the page, but a covered animation still
+   re-rasterises its blur every frame. Park them while it is open. */
+[data-hiw] .spin,
+[data-hiw] .ribbon i,
+[data-hiw] .beam{animation-play-state:paused}
 
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
@@ -392,7 +397,7 @@ h1{
      animation is removed, so this is all that is needed to skip them */
   .note-line,.hero-layer h1 .w,[data-hero],
   [data-hero] .btn,[data-hero] .lede,
-  .cs-hero h1 .w{animation:none;clip-path:none}
+  .cs-hero h1 .w,.hiw-trigger{animation:none;clip-path:none}
   .reveal,.wordset .w{opacity:1;transform:none;transition:none}
   /* the canvas stops being a stage and becomes two ordinary blocks */
   .shell-sticky{position:static;height:auto}
